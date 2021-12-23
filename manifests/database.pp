@@ -58,21 +58,20 @@ class puppet_data_service::database (
 
   # Configure pg_hba.conf
 
-  # Proxy resource for notifications
-  anchor { 'pds-pe_postgresql-notify': }
-
   pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv4)":
     auth_option => "map=pds-map clientcert=1",
     address     => '0.0.0.0/0',
     order       => '4',
-    notify      => Anchor['pds-pe_postgresql-notify'],
+    before      => Class['puppet_data_service::anchor'],
+    notify      => Service['pe-postgresql'],
   }
 
   pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv6)":
     auth_option => "map=pds-map clientcert=1",
     address     => '::/0',
     order       => '5',
-    notify      => Anchor['pds-pe_postgresql-notify'],
+    before      => Class['puppet_data_service::anchor'],
+    notify      => Service['pe-postgresql'],
   }
 
   $allowlist.each |$cn| {
@@ -82,14 +81,9 @@ class puppet_data_service::database (
       ident_map_key      => 'pds-map',
       client_certname    => $cn,
       user               => 'pds',
-      notify             => Anchor['pds-pe_postgresql-notify'],
+      before             => Class['puppet_data_service::anchor'],
+      notify             => Service['pe-postgresql'],
     }
   }
 
-  # Relay notifications from the proxy resource to the service resource, if it
-  # exists in the catalog
-  Service <| name == 'pe-postgresql' |> {
-    subscribe => Anchor['pds-pe_postgresql-notify'],
-    before    => Class['puppet_data_service::anchor'],
-  }
 }
