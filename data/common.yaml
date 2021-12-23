@@ -1,4 +1,4 @@
---- {}
+---
 lookup_options:
   puppet_data_service::server::pds_token:
     convert_to: "Sensitive"
