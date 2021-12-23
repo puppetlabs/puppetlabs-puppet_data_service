@@ -42,8 +42,10 @@ class puppet_data_service::server (
 
   $config_dependencies = [
     file { '/etc/puppetlabs/pds-server/pds-cli.yaml':
-      ensure  => present,
-      content => to_yaml({
+      ensure      => present,
+      group       => 'pe-puppet',
+      mode        => '0640',
+      content     => to_yaml({
         'baseuri' => "http://${database_host}:8160/v1",
         'token'   => $pds_token.unwrap,
       }),
