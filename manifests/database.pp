@@ -34,7 +34,7 @@ class puppet_data_service::database (
     ensure => directory,
     owner  => 'pe-postgres',
     group  => 'pe-postgres',
-    before => Pe_postgresql_psql['DATABASE pds'],
+    before => Pe_postgresql_psql['TABLESPACE pds'],
   }
 
   pe_postgresql_psql { 'TABLESPACE pds':
