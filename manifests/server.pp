@@ -2,7 +2,7 @@ class puppet_data_service::server (
   Sensitive[String] $pds_token,
   String            $database_host = getvar('facts.clientcert'),
   Optional[String]  $package_source = undef,
-  Boolean           $managed_trusted_external_command_setting = true,
+  Boolean           $manage_trusted_external_command_setting = true,
 ) {
   # Used to ensure dependency ordering between this class and the database
   # class, if both are present in the catalog
