@@ -61,6 +61,20 @@ class puppet_data_service::database (
   # Proxy resource for notifications
   anchor { 'pds-pe_postgresql-notify': }
 
+  pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv4)":
+    auth_option => "map=pds-map clientcert=1",
+    address     => '0.0.0.0/0',
+    order       => '4',
+    notify      => Anchor['pds-pe_postgresql-notify'],
+  }
+
+  pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv6)":
+    auth_option => "map=pds-map clientcert=1",
+    address     => '::/0',
+    order       => '5',
+    notify      => Anchor['pds-pe_postgresql-notify'],
+  }
+
   $allowlist.each |$cn| {
     puppet_enterprise::pg::ident_entry { "pds-${cn}":
       pg_ident_conf_path => '/opt/puppetlabs/server/data/postgresql/11/data/pg_ident.conf',
@@ -69,18 +83,6 @@ class puppet_data_service::database (
       client_certname    => $cn,
       user               => 'pds',
       notify             => Anchor['pds-pe_postgresql-notify'],
-    }
-    pe_postgresql::server::pg_hba_rule { "pds access for ${cn} (ipv4)":
-      auth_option => "map=pds-map clientcert=1",
-      address     => '0.0.0.0/0',
-      order       => '4',
-      notify      => Anchor['pds-pe_postgresql-notify'],
-    }
-    pe_postgresql::server::pg_hba_rule { "pds access for ${cn} (ipv6)":
-      auth_option => "map=pds-map clientcert=1",
-      address     => '::/0',
-      order       => '5',
-      notify      => Anchor['pds-pe_postgresql-notify'],
     }
   }
 
