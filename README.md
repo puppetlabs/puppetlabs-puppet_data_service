@@ -29,3 +29,19 @@ class { 'puppet_data_service::server':
   pds_token     => Sensitive('a-secure-admin-token'),
 }
 ```
+
+### Hiera backend
+
+```yaml
+  - name: 'Puppet Data Service'
+    data_hash: puppet_data_service::data_hash
+    uris:
+      - nodes/%{trusted.certname}
+      - os/%{operatingsystem}
+      - common
+    options:
+      pds_token: admintoken
+      pds_service_hosts:
+       - pe-server-c37144-0.us-west1-a.c.puppet-solutions-architects.internal
+       - pe-server-c37144-1.us-west1-b.c.puppet-solutions-architects.internal
+```
