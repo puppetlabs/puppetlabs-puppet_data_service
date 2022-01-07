@@ -40,8 +40,8 @@ class { 'puppet_data_service::server':
       - os/%{operatingsystem}
       - common
     options:
-      pds_token: admintoken
-      pds_service_hosts:
+      token: admintoken
+      servers:
        - pe-server-c37144-0.us-west1-a.c.puppet-solutions-architects.internal
        - pe-server-c37144-1.us-west1-b.c.puppet-solutions-architects.internal
 ```
