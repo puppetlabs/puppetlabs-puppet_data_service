@@ -55,6 +55,10 @@ class puppet_data_service::server (
       ensure  => present,
       notify  => Service['pds-server'],
       content => to_yaml({
+        'use-ssl'  => true,
+        'ssl-key'  => '/etc/puppetlabs/pds/ssl/key.pem',
+        'ssl-cert' => '/etc/puppetlabs/pds/ssl/cert.pem',
+        'ssl-ca'   => '/etc/puppetlabs/pds/ssl/ca.pem',
         'database' => {
           'adapter'     => 'postgresql',
           'encoding'    => 'unicode',
