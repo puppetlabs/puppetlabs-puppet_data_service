@@ -42,28 +42,24 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     session
   end
 
-  def config_from_pds_cli_yaml
+  def config_from_file
+    return @config_from_file if instance_variable_defined?(:'@config_from_file')
     path = '/etc/puppetlabs/pds-server/pds-cli.yaml'
-    if File.exist?(path)
-      config = YAML.load_file(path)
-      if config['baseuri']
-        uri = URI(config['baseuri'])
-        config['servers'] = ["#{uri.scheme}://#{uri.host}"]
-      end
-      config
-    else
-      {}
+    return @config_from_file = {} unless File.exist?(path)
+
+    @config_from_file = YAML.load_file(path)
+    if @config_from_file['baseuri']
+      uri = URI(@config_from_file['baseuri'])
+      @config_from_file['servers'] = ["#{uri.scheme}://#{uri.host}"]
     end
+    @config_from_file
   end
 
   def data_hash(options, context)
     level = options['uri']
-
-    # TODO: get configuration from pds-cli.yaml config file
-    config_from_file = config_from_pds_cli_yaml
     token = options['token'] || config_from_file['token']
-    # TODO: switch default to server certname, not Socket.gethostname
     servers = options['servers'] || config_from_file['servers'] || Array(Socket.gethostname)
+    # TODO: switch default to server certname, not Socket.gethostname
 
     adapter = sessionadapter.adapt(closure_scope.environment)
 
