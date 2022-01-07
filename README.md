@@ -32,7 +32,7 @@ class { 'puppet_data_service::server':
 
 ### Hiera backend
 
-This will automatically load configuration from the default file, `/etc/puppetlabs/pds-server/pds-cli.yaml`.
+This will automatically load configuration from the default file, `/etc/puppetlabs/pds-server/pds-client.yaml`.
 
 ```yaml
   - name: "Puppet Data Service"
@@ -44,14 +44,13 @@ This will automatically load configuration from the default file, `/etc/puppetla
     options:
       # By default, the backend loads its configuration from 
       # /etc/puppetlabs/pds-server/pds-cli.yaml. If the file does not exist,
-      # the backend will raise an exception and halt. Setting
-      # `on_config_absent` to "continue" will cause the backend to instead
-      # return `not_found` and continue, in the event the configuration file
-      # does not exist.
+      # or if the file does not contain the required values, the backend will
+      # raise an exception and halt. Setting `on_config_absent` to "continue"
+      # will cause the backend to instead return `not_found` and continue.
       on_config_absent: "continue"
 ```
 
-This includes the required options directly. The configuration file does not need to exist.
+This includes the required options directly. The configuration file does not need to exist or contain options.
 
 Servers may optionally include the scheme `http://` or `https://` (default is `https://`). The port is not configurable at this time, and is expected to be 8160.
 

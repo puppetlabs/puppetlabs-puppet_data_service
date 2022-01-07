@@ -22,26 +22,26 @@ class puppet_data_service::server (
   }
 
   $cert_files = [
-    File { '/etc/puppetlabs/pds-server/ssl':
+    File { '/etc/puppetlabs/pds/ssl':
       ensure => directory,
       mode   => '0700',
     },
-    File { '/etc/puppetlabs/pds-server/ssl/cert.pem':
+    File { '/etc/puppetlabs/pds/ssl/cert.pem':
       ensure => file,
       source => "/etc/puppetlabs/puppet/ssl/certs/${clientcert}.pem",
     },
-    File { '/etc/puppetlabs/pds-server/ssl/key.pem':
+    File { '/etc/puppetlabs/pds/ssl/key.pem':
       ensure => file,
       source => "/etc/puppetlabs/puppet/ssl/private_keys/${clientcert}.pem",
     },
-    File { '/etc/puppetlabs/pds-server/ssl/ca.pem':
+    File { '/etc/puppetlabs/pds/ssl/ca.pem':
       ensure => file,
       source => "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
     },
   ]
 
   $config_dependencies = [
-    file { '/etc/puppetlabs/pds-server/pds-cli.yaml':
+    file { '/etc/puppetlabs/pds/pds-client.yaml':
       ensure      => present,
       group       => 'pe-puppet',
       mode        => '0640',
@@ -51,7 +51,7 @@ class puppet_data_service::server (
       }),
     },
 
-    file { '/etc/puppetlabs/pds-server/pds.yaml':
+    file { '/etc/puppetlabs/pds/pds-server.yaml':
       ensure  => present,
       notify  => Service['pds-server'],
       content => to_yaml({
@@ -63,9 +63,9 @@ class puppet_data_service::server (
           'database'    => 'pds',
           'user'        => 'pds',
           'sslmode'     => 'verify-full',
-          'sslcert'     => '/etc/puppetlabs/pds-server/ssl/cert.pem',
-          'sslkey'      => '/etc/puppetlabs/pds-server/ssl/key.pem',
-          'sslrootcert' => '/etc/puppetlabs/pds-server/ssl/ca.pem',
+          'sslcert'     => '/etc/puppetlabs/pds/ssl/cert.pem',
+          'sslkey'      => '/etc/puppetlabs/pds/ssl/key.pem',
+          'sslrootcert' => '/etc/puppetlabs/pds/ssl/ca.pem',
         },
       }),
     },
