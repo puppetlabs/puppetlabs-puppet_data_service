@@ -7,6 +7,9 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
   # Used for raising an error to connect to the PDS service
   class PDSConnectionError < StandardError; end
 
+  DEFAULT_CONFIG_PATH = '/etc/puppetlabs/pds-server/pds-cli.yaml'
+  DEFAULT_ON_CONFIG_ABSENT = 'fail' # other valid value is 'continue'
+
   dispatch :data_hash do
     param 'Hash', :options
     param 'Puppet::LookupContext', :context
@@ -42,24 +45,51 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     session
   end
 
-  def config_from_file
-    return @config_from_file if instance_variable_defined?(:'@config_from_file')
-    path = '/etc/puppetlabs/pds-server/pds-cli.yaml'
-    return @config_from_file = {} unless File.exist?(path)
+  def load_config_file(path)
+    return @load_config_file if instance_variable_defined?(:'@load_config_file')
 
-    @config_from_file = YAML.load_file(path)
-    if @config_from_file['baseuri']
-      uri = URI(@config_from_file['baseuri'])
-      @config_from_file['servers'] = ["#{uri.scheme}://#{uri.host}"]
+    config = YAML.load_file(path)
+    if config['baseuri'] && config['servers'].nil?
+      uri = URI(config['baseuri'])
+      config['servers'] = ["#{uri.scheme}://#{uri.host}"]
     end
-    @config_from_file
+
+    @load_config_file = config
+  end
+
+  def parse_options(options)
+    return @parsed_options if instance_variable_defined?(:'@parsed_options')
+
+    # Load the config file. Behavior in the event the config file does not
+    # exist is configurable.
+    config_path = options['config'] || DEFAULT_CONFIG_PATH
+    on_absent = options['on_config_absent'] || DEFAULT_ON_CONFIG_ABSENT
+
+    unless ['fail', 'continue'].include?(on_absent)
+      raise Puppet::DataBinding::LookupError, "on_config_absent behavior set to invalid value, '#{on_absent}'; must be 'fail' or 'continue'"
+    end
+
+    config_present = File.exist?(config_path)
+    config_from_file = config_present ? load_config_file(config_path) : {}
+
+    level = options['uri']
+    token = options['token'] || config_from_file['token']
+    servers = options['servers'] || config_from_file['servers']
+
+    @parsed_options = [level, token, servers, on_absent]
   end
 
   def data_hash(options, context)
-    level = options['uri']
-    token = options['token'] || config_from_file['token']
-    servers = options['servers'] || config_from_file['servers'] || Array(Socket.gethostname)
-    # TODO: switch default to server certname, not Socket.gethostname
+    level, token, servers, on_absent = parse_options(options)
+
+    if [token, servers].any? { |val| val.nil? }
+      if on_absent == 'fail'
+        raise Puppet::DataBinding::LookupError, "Config file does not exist and config not provided in options; configured action is to fail"
+      else
+        context.explain { "[puppet_data_service::data_hash] Required config absent; configured action is to continue" }
+        context.not_found
+      end
+    end
 
     adapter = sessionadapter.adapt(closure_scope.environment)
 
@@ -70,9 +100,7 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
         context.explain { "[puppet_data_service::data_hash] PDS connection established to #{adapter.session.address}" }
       rescue PDSConnectionError
         adapter.session = nil
-        context.explain { '[puppet_data_service::data_hash] Failed to establish PDS connection' }
-        # TODO: raise some kind of error, optionally configurable behavior
-        return {}
+        raise Puppet::DataBinding::LookupError, "Failed to establish connection to PDS server"
       end
     else
       context.explain { '[puppet_data_service::data_hash] Re-using established PDS connection from cache' }
@@ -91,7 +119,6 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
 
     response = session.request(req)
 
-    # TODO: better error handling
     if response.is_a?(Net::HTTPOK)
       data = JSON.parse(response.body)
       data.reduce({}) do |memo, datum|
@@ -99,7 +126,7 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
         memo
       end
     else
-      raise "#{response.class}: #{response.body}"
+      raise Puppet::DataBinding::LookupError, "Invalid response from PDS server: #{response.class}: #{response.body}"
     end
   end
 end
