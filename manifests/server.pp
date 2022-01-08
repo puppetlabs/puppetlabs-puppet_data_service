@@ -42,12 +42,13 @@ class puppet_data_service::server (
 
   $config_dependencies = [
     file { '/etc/puppetlabs/pds/pds-client.yaml':
-      ensure      => present,
-      group       => 'pe-puppet',
-      mode        => '0640',
-      content     => to_yaml({
-        'baseuri' => "http://${database_host}:8160/v1",
+      ensure  => present,
+      group   => 'pe-puppet',
+      mode    => '0640',
+      content => to_yaml({
+        'baseuri' => "https://${database_host}:8160/v1",
         'token'   => $pds_token.unwrap,
+        'ssl-ca'  => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
       }),
     },
 
