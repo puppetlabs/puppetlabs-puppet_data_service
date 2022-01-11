@@ -1,9 +1,16 @@
 class puppet_data_service::database (
-  Array[String] $allowlist = [$clientcert],
+  Optional[Array[String]] $allowlist = undef,
 ) {
   # Used to ensure dependency ordering between this class and the database
   # class, if both are present in the catalog
   include puppet_data_service::anchor
+
+  $use_allowlist = $allowlist ? {
+    default => $allowlist,
+    undef   => puppetdb_query(@(PQL)).map |$r| { $r['certname'] },
+      resources[certname] { type = "Class" and title = "Puppet_enterprise::Profile::Master" }
+    PQL
+  }
 
   Pe_postgresql_psql {
     psql_user  => 'pe-postgres',
@@ -74,7 +81,7 @@ class puppet_data_service::database (
     notify      => Service['pe-postgresql'],
   }
 
-  $allowlist.each |$cn| {
+  $use_allowlist.each |$cn| {
     puppet_enterprise::pg::ident_entry { "pds-${cn}":
       pg_ident_conf_path => '/opt/puppetlabs/server/data/postgresql/11/data/pg_ident.conf',
       database           => 'pds',
