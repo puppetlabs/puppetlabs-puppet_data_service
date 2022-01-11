@@ -82,7 +82,7 @@ class puppet_data_service::server (
         /opt/puppetlabs/sbin/pds-ctl rake db:migrate && \
         /opt/puppetlabs/sbin/pds-ctl rake 'app:set_admin_token[${pds_token.unwrap}]'
         | CMD
-      require => Anchor['puppet_data_service'],
+      require => Class['puppet_data_service::anchor'],
     },
 
     service { 'pds-server':

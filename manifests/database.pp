@@ -51,7 +51,7 @@ class puppet_data_service::database (
     unless  => "SELECT FROM pg_extension WHERE extname = 'pgcrypto'",
     command => "CREATE EXTENSION pgcrypto",
     require => Pe_postgresql_psql['DATABASE pds'],
-    before  => Anchor['puppet_data_service'],
+    before  => Class['puppet_data_service::anchor'],
   }
 
   # Configure pg_hba.conf
@@ -63,7 +63,7 @@ class puppet_data_service::database (
     type        => 'hostssl',
     database    => 'pds',
     auth_method => 'cert',
-    before      => Anchor['puppet_data_service'],
+    before      => Class['puppet_data_service::anchor'],
     notify      => Exec['postgresql_reload'],
   }
 
@@ -86,12 +86,12 @@ class puppet_data_service::database (
       ident_map_key      => 'pds-map',
       client_certname    => $cn,
       user               => 'pds',
-      before             => Anchor['puppet_data_service'],
+      before             => Class['puppet_data_service::anchor'],
       notify             => Exec['postgresql_reload'],
     }
   }
 
   # Ensure the postgresql server is reloaded before this class is considered
   # complete
-  Exec['postgresql_reload'] -> Anchor['puppet_data_service']
+  Exec['postgresql_reload'] -> Class['puppet_data_service::anchor']
 }
