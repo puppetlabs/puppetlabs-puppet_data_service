@@ -7,7 +7,7 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
   # Used for raising an error to connect to the PDS service
   class PDSConnectionError < StandardError; end
 
-  DEFAULT_CONFIG_PATH = '/etc/puppetlabs/pds-server/pds-client.yaml'
+  DEFAULT_CONFIG_PATH = '/etc/puppetlabs/pds/pds-client.yaml'
   DEFAULT_ON_CONFIG_ABSENT = 'fail' # other valid value is 'continue'
 
   dispatch :data_hash do
