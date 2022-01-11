@@ -24,14 +24,17 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     end
   end
 
-  def pds_connection(servers)
+  def pds_connection(servers, ca_file = nil)
     session = servers.find do |server|
       begin
         host = server.sub(%r{^https?://}, '')
         try = Net::HTTP.new(host, 8160)
         try.use_ssl = true unless server.start_with?('http://')
+        try.ca_file = ca_file unless ca_file.nil?
         try.start
         break try # return the connection, not the uri
+      rescue OpenSSL::SSL::SSLError => e
+        raise PDSConnectionError, e.message
       rescue SocketError
         # Try the next URI in the list
         nil
@@ -39,7 +42,7 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     end
 
     if session.nil?
-      raise PDSConnectionError, "Failed to connect to any of #{servers}"
+      raise PDSConnectionError, "unable to connect to any of #{servers}"
     end
 
     session
@@ -75,15 +78,22 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     level = options['uri']
     token = options['token'] || config_from_file['token']
     servers = options['servers'] || config_from_file['servers']
+    ca_file = options['ca-file'] || config_from_file['ca-file']
 
-    @parsed_options = [level, token, servers, on_absent]
+    @parsed_options = {
+      level: level,
+      token: token,
+      servers: servers,
+      ca_file: ca_file,
+      on_absent: on_absent,
+    }
   end
 
   def data_hash(options, context)
-    level, token, servers, on_absent = parse_options(options)
+    opts = parse_options(options)
 
-    if [token, servers].any? { |val| val.nil? }
-      if on_absent == 'fail'
+    if [opts[:token], opts[:servers]].any? { |val| val.nil? }
+      if opts[:on_absent] == 'fail'
         raise Puppet::DataBinding::LookupError, "Config file does not exist and config not provided in options; configured action is to fail"
       else
         context.explain { "[puppet_data_service::data_hash] Required config absent; configured action is to continue" }
@@ -96,11 +106,11 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     if adapter.session.nil?
       context.explain { '[puppet_data_service::data_hash] PDS connection not cached...establishing...' }
       begin
-        adapter.session = pds_connection(servers)
+        adapter.session = pds_connection(opts[:servers], opts[:ca_file])
         context.explain { "[puppet_data_service::data_hash] PDS connection established to #{adapter.session.address}" }
-      rescue PDSConnectionError
+      rescue PDSConnectionError => e
         adapter.session = nil
-        raise Puppet::DataBinding::LookupError, "Failed to establish connection to PDS server"
+        raise Puppet::DataBinding::LookupError, "Failed to establish connection to PDS server: #{e.message}"
       end
     else
       context.explain { '[puppet_data_service::data_hash] Re-using established PDS connection from cache' }
@@ -111,11 +121,11 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     uri = URI::HTTPS.build(host: session.address,
                            port: session.port,
                            path: '/v1/hiera-data',
-                           query: URI.encode_www_form({level: level}))
+                           query: URI.encode_www_form({level: opts[:level]}))
 
     req = Net::HTTP::Get.new(uri)
     req['Content-Type'] = "application/json"
-    req['Authorization'] = "Bearer #{token}"
+    req['Authorization'] = "Bearer #{opts[:token]}"
 
     response = session.request(req)
 
