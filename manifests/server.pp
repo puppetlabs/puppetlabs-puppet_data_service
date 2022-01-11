@@ -78,10 +78,11 @@ class puppet_data_service::server (
     exec { 'pds-migrations':
       unless  => '/opt/puppetlabs/sbin/pds-ctl rake db:migrate:status',
       command => Sensitive(@("CMD"/L)),
+        /bin/test "$(/opt/puppetlabs/sbin/pds-ctl rake db:version | cut -d ':' -f 2)" -eq 0 && \
         /opt/puppetlabs/sbin/pds-ctl rake db:migrate && \
         /opt/puppetlabs/sbin/pds-ctl rake 'app:set_admin_token[${pds_token.unwrap}]'
         | CMD
-      require => Class['puppet_data_service::anchor'],
+      require => Anchor['puppet_data_service'],
     },
 
     service { 'pds-server':
