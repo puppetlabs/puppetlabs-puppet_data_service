@@ -15,7 +15,7 @@ See also: [Puppet Data Service](https://github.com/puppetlabs/puppet-data-servic
 
 ## Installation
 
-1. Add the `puppet_data_service` module to your control-repo
+1. Add the `puppet_data_service` module to the Puppetfile in your control-repo
 
 ```
 mod 'puppet_data_service',
