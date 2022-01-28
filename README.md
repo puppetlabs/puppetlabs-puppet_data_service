@@ -32,7 +32,7 @@ class { 'puppet_data_service::server':
 
 ### Hiera backend
 
-This will automatically load configuration from the default file, `/etc/puppetlabs/pds-server/pds-client.yaml`.
+This will automatically load configuration from the default file, `/etc/puppetlabs/pds/pds-client.yaml`.
 
 ```yaml
   - name: "Puppet Data Service"
