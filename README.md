@@ -17,10 +17,10 @@ See also: [Puppet Data Service](https://github.com/puppetlabs/puppet-data-servic
 
 1. Add the `puppet_data_service` module to the Puppetfile in your control-repo
 
-```
+```ruby
 mod 'puppet_data_service',
-git:    'https://github.com/puppetlabs/puppetlabs-puppet_data_service',
-branch: 'main'
+  git:    'https://github.com/puppetlabs/puppetlabs-puppet_data_service',
+  branch: 'main'
 ```
 
 2. Include the [PDS Hiera level](#hiera-backend) in your control-repo's `hiera.yaml` file
