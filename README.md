@@ -13,6 +13,18 @@ This module contains classes to configure the PDS on Puppet servers, or to confi
 
 See also: [Puppet Data Service](https://github.com/puppetlabs/puppet-data-service)
 
+## Installation
+
+1. Add the `puppet_data_service` module to your control-repo
+
+```
+mod 'puppet_data_service',
+git:    'https://github.com/puppetlabs/puppetlabs-puppet_data_service',
+branch: 'main'
+```
+
+2. Include the [PDS Hiera level](#hiera-backend) in your control-repo's `hiera.yaml` file
+
 ## Usage
 
 For the database server:
