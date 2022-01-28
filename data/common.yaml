@@ -3,4 +3,4 @@ lookup_options:
   puppet_data_service::server::pds_token:
     convert_to: "Sensitive"
 
-puppet_data_service::server::package_source: 'https://github.com/puppetlabs/puppet-data-service/releases/download/v0.1.0-prerelease4/pds-server-0.1.0.prerelease4-1.x86_64.rpm'
+puppet_data_service::server::package_source: 'https://github.com/puppetlabs/puppet-data-service/releases/download/v0.1.0/pds-server-0.1.0-1.x86_64.pe-2021.4.0.rpm'
