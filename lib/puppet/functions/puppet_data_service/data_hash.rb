@@ -3,12 +3,11 @@ require 'yaml'
 require 'net/http'
 
 Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
-
   # Used for raising an error to connect to the PDS service
   class PDSConnectionError < StandardError; end
 
-  DEFAULT_CONFIG_PATH = '/etc/puppetlabs/pds/pds-client.yaml'
-  DEFAULT_ON_CONFIG_ABSENT = 'fail' # other valid value is 'continue'
+  DEFAULT_CONFIG_PATH = '/etc/puppetlabs/pds/pds-client.yaml'.freeze
+  DEFAULT_ON_CONFIG_ABSENT = 'fail'.freeze # other valid value is 'continue'
 
   dispatch :data_hash do
     param 'Hash', :options
@@ -94,9 +93,9 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
 
     if [opts[:token], opts[:servers]].any? { |val| val.nil? }
       if opts[:on_absent] == 'fail'
-        raise Puppet::DataBinding::LookupError, "Config file does not exist and config not provided in options; configured action is to fail"
+        raise Puppet::DataBinding::LookupError, 'Config file does not exist and config not provided in options; configured action is to fail'
       else
-        context.explain { "[puppet_data_service::data_hash] Required config absent; configured action is to continue" }
+        context.explain { '[puppet_data_service::data_hash] Required config absent; configured action is to continue' }
         context.not_found
       end
     end
@@ -121,19 +120,18 @@ Puppet::Functions.create_function(:'puppet_data_service::data_hash') do
     uri = URI::HTTPS.build(host: session.address,
                            port: session.port,
                            path: '/v1/hiera-data',
-                           query: URI.encode_www_form({level: opts[:level]}))
+                           query: URI.encode_www_form({ level: opts[:level] }))
 
     req = Net::HTTP::Get.new(uri)
-    req['Content-Type'] = "application/json"
+    req['Content-Type'] = 'application/json'
     req['Authorization'] = "Bearer #{opts[:token]}"
 
     response = session.request(req)
 
     if response.is_a?(Net::HTTPOK)
       data = JSON.parse(response.body)
-      data.reduce({}) do |memo, datum|
+      data.each_with_object({}) do |datum, memo|
         memo[datum['key']] = datum['value']
-        memo
       end
     else
       raise Puppet::DataBinding::LookupError, "Invalid response from PDS server: #{response.class}: #{response.body}"

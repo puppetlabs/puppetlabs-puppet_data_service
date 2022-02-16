@@ -24,7 +24,7 @@ class puppet_data_service::database (
 
   pe_postgresql_psql { 'ROLE pds':
     unless  => "SELECT FROM pg_roles WHERE rolname = 'pds'",
-    command => "CREATE ROLE pds WITH LOGIN CONNECTION LIMIT -1",
+    command => 'CREATE ROLE pds WITH LOGIN CONNECTION LIMIT -1',
     before  => Pe_postgresql_psql['DATABASE pds'],
   }
 
@@ -43,13 +43,13 @@ class puppet_data_service::database (
 
   pe_postgresql_psql { 'DATABASE pds':
     unless  => "SELECT datname FROM pg_database WHERE datname='pds'",
-    command => "CREATE DATABASE pds TABLESPACE pds",
+    command => 'CREATE DATABASE pds TABLESPACE pds',
   }
 
   pe_postgresql_psql { 'DATABASE pds EXTENSION pgcrypto':
     db      => 'pds',
     unless  => "SELECT FROM pg_extension WHERE extname = 'pgcrypto'",
-    command => "CREATE EXTENSION pgcrypto",
+    command => 'CREATE EXTENSION pgcrypto',
     require => Pe_postgresql_psql['DATABASE pds'],
     before  => Class['puppet_data_service::anchor'],
   }
@@ -67,14 +67,14 @@ class puppet_data_service::database (
     notify      => Exec['postgresql_reload'],
   }
 
-  pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv4)":
-    auth_option => "map=pds-map clientcert=1",
+  pe_postgresql::server::pg_hba_rule { 'pds access for mapped certnames (ipv4)':
+    auth_option => 'map=pds-map clientcert=1',
     address     => '0.0.0.0/0',
     order       => '4',
   }
 
-  pe_postgresql::server::pg_hba_rule { "pds access for mapped certnames (ipv6)":
-    auth_option => "map=pds-map clientcert=1",
+  pe_postgresql::server::pg_hba_rule { 'pds access for mapped certnames (ipv6)':
+    auth_option => 'map=pds-map clientcert=1',
     address     => '::/0',
     order       => '5',
   }

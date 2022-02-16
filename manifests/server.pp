@@ -36,7 +36,7 @@ class puppet_data_service::server (
     },
     File { '/etc/puppetlabs/pds/ssl/ca.pem':
       ensure => file,
-      source => "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
+      source => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
     },
   ]
 
@@ -48,7 +48,7 @@ class puppet_data_service::server (
       content => to_yaml({
         'baseuri' => "https://${database_host}:8160/v1",
         'token'   => $pds_token.unwrap,
-        'ca-file'  => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
+        'ca-file' => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
       }),
     },
 
