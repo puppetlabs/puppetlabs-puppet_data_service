@@ -1,6 +1,6 @@
 class puppet_data_service::server (
   Sensitive[String] $pds_token,
-  String            $database_host = getvar('facts.clientcert'),
+  String            $database_host = undef,
   Optional[String]  $package_source = undef,
   Boolean           $manage_trusted_external_command_setting = true,
 ) {
@@ -36,9 +36,23 @@ class puppet_data_service::server (
     },
     File { '/etc/puppetlabs/pds/ssl/ca.pem':
       ensure => file,
-      source => "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
+      source => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
     },
   ]
+
+  if $database_host != undef {
+    $db_host = $database_host
+  } else {
+    # query PuppetDB for the database host
+    $query_output = puppetdb_query('nodes[certname] { resources{type="Class" and title="Puppet_enterprise::Profile::Database"}}')
+    if empty($query_output) {
+      # not found in PuppetDB, use fact
+      $db_host = $facts['clientcert']
+    } else {
+      # use first query result
+      $db_host = $query_output[0]['certname']
+    }
+  }
 
   $config_dependencies = [
     file { '/etc/puppetlabs/pds/pds-client.yaml':
@@ -48,7 +62,7 @@ class puppet_data_service::server (
       content => to_yaml({
         'baseuri' => "https://${database_host}:8160/v1",
         'token'   => $pds_token.unwrap,
-        'ca-file'  => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
+        'ca-file' => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
       }),
     },
 
@@ -64,7 +78,7 @@ class puppet_data_service::server (
           'adapter'     => 'postgresql',
           'encoding'    => 'unicode',
           'pool'        => 2,
-          'host'        => $database_host,
+          'host'        => $db_host,
           'database'    => 'pds',
           'user'        => 'pds',
           'sslmode'     => 'verify-full',
