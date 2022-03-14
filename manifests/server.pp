@@ -1,6 +1,6 @@
 class puppet_data_service::server (
   Sensitive[String] $pds_token,
-  String            $database_host = undef,
+  Optional[String]  $database_host = undef,
   Optional[String]  $package_source = undef,
   Boolean           $manage_trusted_external_command_setting = true,
 ) {
