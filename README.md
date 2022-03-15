@@ -23,7 +23,7 @@ mod 'puppet_data_service',
   branch: 'main'
 ```
 
-2. Include the [PDS Hiera level](#hiera-backend) in your control-repo's `hiera.yaml` file
+1. Include the [PDS Hiera level](#hiera-backend) in your control-repo's `hiera.yaml` file
 
 ## Usage
 
