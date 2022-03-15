@@ -44,8 +44,9 @@ class puppet_data_service::server (
   if $database_host != undef {
     $db_host = $database_host
   } else {
-    # query PuppetDB for the database host
-    $query_output = puppetdb_query('nodes[certname] { resources{type="Class" and title="Puppet_enterprise::Profile::Database"}}')
+    # query PuppetDB for the primary server since we assume the database runs on it
+    # in cases this guess is wrong, the user will need to override the $database_host parameter explicitly.
+    $query_output = puppetdb_query('resources[certname] {type="Class" and title="Puppet_enterprise::Profile::Certificate_authority"}')
     if empty($query_output) {
       # not found in PuppetDB, use fact
       $db_host = $facts['clientcert']
