@@ -1,3 +1,4 @@
+# Configuration of the PDS server
 class puppet_data_service::server (
   Sensitive[String] $pds_token,
   Optional[String]  $database_host = undef,
