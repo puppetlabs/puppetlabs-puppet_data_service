@@ -92,7 +92,6 @@ class puppet_data_service::server (
     },
 
     exec { 'pds-migrations':
-      unless  => '/opt/puppetlabs/sbin/pds-ctl rake db:migrate:status',
       command => Sensitive(@("CMD"/L)),
         /usr/bin/test "$(/opt/puppetlabs/sbin/pds-ctl rake db:version | cut -d ':' -f 2)" -eq 0 && \
         /opt/puppetlabs/sbin/pds-ctl rake db:migrate && \
