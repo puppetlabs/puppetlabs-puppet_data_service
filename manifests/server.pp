@@ -62,7 +62,7 @@ class puppet_data_service::server (
       group   => 'pe-puppet',
       mode    => '0640',
       content => to_yaml({
-        'baseuri' => "https://${db_host}:8160/v1",
+        'baseuri' => "https://${clientcert}:8160/v1",
         'token'   => $pds_token.unwrap,
         'ca-file' => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
       }),
