@@ -100,7 +100,7 @@ class puppet_data_service::server (
     },
 
     exec { 'pds-set-admin-user':
-      unless  => '/opt/puppetlabs/sbin/pds-ctl rake app:does_admin_exist',
+      unless  => '/opt/puppetlabs/sbin/pds-ctl rake app:does_admin_exist?',
       command => Sensitive(@("CMD"/L)),
         /opt/puppetlabs/sbin/pds-ctl rake 'app:set_admin_token[${pds_token.unwrap}]'
         | CMD
