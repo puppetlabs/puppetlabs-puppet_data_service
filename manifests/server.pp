@@ -62,7 +62,7 @@ class puppet_data_service::server (
       group   => 'pe-puppet',
       mode    => '0640',
       content => to_yaml({
-        'baseuri' => "https://${db_host}:8160/v1",
+        'baseuri' => "https://${clientcert}:8160/v1",
         'token'   => $pds_token.unwrap,
         'ca-file' => '/etc/puppetlabs/puppet/ssl/certs/ca.pem',
       }),
@@ -95,10 +95,17 @@ class puppet_data_service::server (
       unless  => '/opt/puppetlabs/sbin/pds-ctl rake db:migrate:status',
       command => Sensitive(@("CMD"/L)),
         /usr/bin/test "$(/opt/puppetlabs/sbin/pds-ctl rake db:version | cut -d ':' -f 2)" -eq 0 && \
-        /opt/puppetlabs/sbin/pds-ctl rake db:migrate && \
-        /opt/puppetlabs/sbin/pds-ctl rake 'app:set_admin_token[${pds_token.unwrap}]'
+        /opt/puppetlabs/sbin/pds-ctl rake db:migrate
         | CMD
       require => Class['puppet_data_service::anchor'],
+    },
+
+    exec { 'pds-set-admin-user':
+      unless  => '/opt/puppetlabs/sbin/pds-ctl rake app:admin_exists?',
+      command => Sensitive(@("CMD"/L)),
+        /opt/puppetlabs/sbin/pds-ctl rake 'app:set_admin_token[${pds_token.unwrap}]'
+        | CMD
+      require => Exec['pds-migrations'],
     },
 
     service { 'pds-server':
