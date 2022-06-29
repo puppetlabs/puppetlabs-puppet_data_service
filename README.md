@@ -2,6 +2,11 @@
 
 This module configures the Puppet Data Service (PDS).
 
+<details>
+<summary>This module is not supported by Puppet and does not qualify for Puppet Support plans. It's provided without guarantee or warranty and is intended for use when deployed by Puppet's Solutions Architects team.</summary>
+<blockquote>[tier:experimental]</blockquote>
+</details>
+
 ## Table of Contents
 
 1. [Description](#description)
