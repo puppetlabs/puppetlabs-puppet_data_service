@@ -38,7 +38,7 @@ For the database server:
 include puppet_data_service::database
 ```
 
-For Puppet servers:
+For the Puppet Primary server which will be hosting the PDS service:
 
 ```puppet
 class { 'puppet_data_service::server':
