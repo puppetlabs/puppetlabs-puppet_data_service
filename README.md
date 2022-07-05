@@ -38,7 +38,7 @@ For the database server:
 include puppet_data_service::database
 ```
 
-For the Puppet Primary server which will be hosting the PDS service:
+For *every puppetserver* which will be hosting the PDS service:
 
 ```puppet
 class { 'puppet_data_service::server':
@@ -46,6 +46,13 @@ class { 'puppet_data_service::server':
   pds_token     => Sensitive('a-secure-admin-token'),
 }
 ```
+
+*NOTE It is imperative that you classify every single puppetserver in your infrastructure with this class*. So this means:
+- the Primary server
+- the Replica, if it exists
+- all the compilers, if they exist.
+
+Failing to classify all the puppetservers with PDS will lead to a situation where some puppetservers will compile a different catalog than others which will lead to unpredictable behaviour.
 
 ### Hiera backend
 
