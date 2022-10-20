@@ -35,5 +35,4 @@ class puppet_data_service::database::rescue {
   service { 'pe-postgresql':
     ensure => running,
   }
-
 }
